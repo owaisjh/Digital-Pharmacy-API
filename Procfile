@@ -1,1 +1,1 @@
-api: gunicorn app1.wsgi
+api: gunicorn app1.py
