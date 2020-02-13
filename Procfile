@@ -1,1 +1,1 @@
-web: gunicorn lol.wsgi
+web: gunicorn app1.wsgi
