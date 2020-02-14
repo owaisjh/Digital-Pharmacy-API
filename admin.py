@@ -77,7 +77,7 @@ class Up(Resource):
                         help="This field cannot be left blank.")
 
     def post(self):
-        data= Update.parser.parse_args()
+        data= Up.parser.parse_args()
 
         connection = sqlite3.connect('meds.db')
         cursor = connection.cursor()
