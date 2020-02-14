@@ -7,6 +7,9 @@ from user import SetProfile, GetProfile, UserRegister, AllMeds, CatCall, Search,
 
 from delivery import Orders, Complete
 
+from admin import NewMed, Update
+
+
 from datetime import timedelta
 
 app = Flask(__name__)
@@ -29,6 +32,9 @@ api.add_resource(Update, '/update')
 
 api.add_resource(Orders, '/orders')
 api.add_resource(Complete, '/complete')
+
+api.add_resource(Update, '/update')
+api.add_resource(NewMed, '/new_med')
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
