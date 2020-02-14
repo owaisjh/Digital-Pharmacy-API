@@ -53,7 +53,7 @@ class NewMed(Resource):
 
         return True, 201
 
-class Update(Resource):
+class Up(Resource):
     parser = reqparse.RequestParser()
 
     parser.add_argument('name',

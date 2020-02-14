@@ -7,8 +7,7 @@ from user import SetProfile, GetProfile, UserRegister, AllMeds, CatCall, Search,
 
 from delivery import Orders, Complete
 
-from admin import NewMed, Update
-
+from admin import NewMed, Up
 
 from datetime import timedelta
 
@@ -33,7 +32,7 @@ api.add_resource(Update, '/update')
 api.add_resource(Orders, '/orders')
 api.add_resource(Complete, '/complete')
 
-api.add_resource(Update, '/update')
+api.add_resource(Up, '/update')
 api.add_resource(NewMed, '/new_med')
 
 if __name__ == "__main__":
