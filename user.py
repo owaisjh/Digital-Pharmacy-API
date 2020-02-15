@@ -246,9 +246,7 @@ class AddOrder(Resource):
                         type=int,
                         required=True,
                         help="This field cannot be left blank.")
-
-   
-
+  #  @jwt_required()
     def post(self):
         data = AddOrder.parser.parse_args()
         connection = sqlite3.connect('user.db')
@@ -271,33 +269,37 @@ class AddOrder(Resource):
 
 
 
-class Update(Resource):
+class DecStock(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('name',
                         type=str,
                         required=True,
                         help="This field cannot be left blank.")
-
+  #  @jwt_required()
     def post(self):
-        data = Update.parser.parse_args()
+        data = DecStock.parser.parse_args()
         connection = sqlite3.connect('meds.db')
         cursor = connection.cursor()
         query = "SELECT * FROM allmeds WHERE medname=?"
         result = cursor.execute(query, (data["name"],)).fetchone()
 
        
-        
-        query = "UPDATE allmeds SET quantity = ? WHERE medname = ?"
-        cursor.execute(query,(result[3]-1, data["name"]))
+        if(result[3]>0):
+            query = "UPDATE allmeds SET quantity = ? WHERE medname = ?"
+            cursor.execute(query,(result[3]-1, data["name"]))
 
-        query = "UPDATE "+result[1]+" SET quantity = ? WHERE medname = ?"
-        cursor.execute(query,(result[3]-1, data["name"]))
+            query = "UPDATE "+result[1]+" SET quantity = ? WHERE medname = ?"
+            cursor.execute(query,(result[3]-1, data["name"]))
 
+        else:
+            connection.commit()
+            connection.close()
+            return False, 400
 
         connection.commit()
-        connection.close()    
+        connection.close()
 
-        return True,200
+        return True, 200
 
 
 class Orders(Resource):

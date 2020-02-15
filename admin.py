@@ -53,7 +53,7 @@ class NewMed(Resource):
 
         return True, 201
 
-class Up(Resource):
+class Update(Resource):
     parser = reqparse.RequestParser()
 
     parser.add_argument('name',
@@ -77,7 +77,7 @@ class Up(Resource):
                         help="This field cannot be left blank.")
 
     def post(self):
-        data= Up.parser.parse_args()
+        data= Update.parser.parse_args()
 
         connection = sqlite3.connect('meds.db')
         cursor = connection.cursor()

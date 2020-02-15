@@ -3,11 +3,11 @@ from flask_restful import Resource, Api
 from flask_jwt import JWT, jwt_required
 
 from security import authenticate, identity
-from user import SetProfile, GetProfile, UserRegister, AllMeds, CatCall, Search, AddOrder, Update
+from user import SetProfile, GetProfile, UserRegister, AllMeds, CatCall, Search, AddOrder, DecStock
 
 from delivery import Orders, Complete
 
-from admin import NewMed, Up
+from admin import NewMed, Update
 
 from datetime import timedelta
 
@@ -27,12 +27,12 @@ api.add_resource(AllMeds, '/all_meds')
 api.add_resource(CatCall, '/cat_call')
 api.add_resource(Search, '/search')
 api.add_resource(AddOrder, '/add_order')
-api.add_resource(Update, '/update')
+api.add_resource(DecStock, '/dec_stock')
 
 api.add_resource(Orders, '/orders')
 api.add_resource(Complete, '/complete')
 
-api.add_resource(Up, '/update')
+api.add_resource(Update, '/update')
 api.add_resource(NewMed, '/new_med')
 
 if __name__ == "__main__":
