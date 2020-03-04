@@ -227,9 +227,7 @@ class Search(Resource):
                     "quantity": result[i][3]
                 }
                 ll.append(tp)
-        final = []
-        final.append(len(ll))
-        final.append(ll)
+
         '''
         for i in range(len(result)):
             tp = {
@@ -240,9 +238,10 @@ class Search(Resource):
                 }
             ll.append(tp)
 
-
-        return ll, 200
-        #return final, 200
+        final = []
+        final.append(len(ll))
+        final.append(ll)
+        return final, 200
 
 
 class AddOrder(Resource):
@@ -384,14 +383,21 @@ class ListOrders(Resource):
         data = ListOrders.parser.parse_args()
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
+        '''
         query = "SELECT * FROM orders WHERE username = "+data['username']
         result = cursor.execute(query).fetchall()
+        '''
+        query = "SELECT * FROM orders WHERE username=?"
+        result = cursor.execute(query, (data["username"],))
+        row = result.fetchall()
+
+
         ll = []
-        for i in range(len(result)):
+        for i in range(len(row)):
             tp = {
-                "items": result[i][3],
-                "cost": result[i][4],
-                "status": result[i][7]
+                "items": row[i][3],
+                "cost": row[i][4],
+                "status": row[i][7]
             }
             ll.append(tp)
         final = []
