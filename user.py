@@ -212,9 +212,12 @@ class Search(Resource):
         data = Search.parser.parse_args()
         connection = sqlite3.connect('meds.db')
         cursor = connection.cursor()
-        query = "SELECT * FROM allmeds"
+
+        query = "SELECT * FROM allmeds WHERE medname LIKE '%" + data['name'] + "%'"
         result = cursor.execute(query).fetchall()
+
         ll = []
+        '''
         for i in range(len(result)):
             if data['name'] in result[i][0]:
                 tp = {
@@ -227,7 +230,19 @@ class Search(Resource):
         final = []
         final.append(len(ll))
         final.append(ll)
-        return final, 200
+        '''
+        for i in range(len(result)):
+            tp = {
+                    "name": result[i][0],
+                    "category": result[i][1],
+                    "cost": result[i][2],
+                    "quantity": result[i][3]
+                }
+            ll.append(tp)
+
+
+        return ll, 200
+        #return final, 200
 
 
 class AddOrder(Resource):
@@ -357,6 +372,33 @@ class Complete(Resource):
         connection.close()
 
         return True, 201
+
+
+class ListOrders(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+    def post(self):
+        data = ListOrders.parser.parse_args()
+        connection = sqlite3.connect('order.db')
+        cursor = connection.cursor()
+        query = "SELECT * FROM orders WHERE username = "+data['username']
+        result = cursor.execute(query).fetchall()
+        ll = []
+        for i in range(len(result)):
+            tp = {
+                "items": result[i][3],
+                "cost": result[i][4],
+                "status": result[i][7]
+            }
+            ll.append(tp)
+        final = []
+        final.append(len(ll))
+        final.append(ll)
+        return final, 200
+
 
 
 
