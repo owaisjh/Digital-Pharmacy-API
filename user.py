@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt import JWT, jwt_required
-
+import base64
 
 
 
@@ -28,9 +28,9 @@ class User:
             user = cls(*row)
         else:
             user = None
-
         connection.close()
         return user
+
 
     @classmethod
     def find_by_id(cls, _id):
@@ -98,6 +98,31 @@ class UserRegister(Resource):
         return {"id": row[0]}, 201
 
 
+class ForgetPassword(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+
+    parser.add_argument('password',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+
+    def post(self):
+        data= ForgetPassword.parser.parse_args()
+        connection = sqlite3.connect('user.db')
+        cursor = connection.cursor()
+        query = "UPDATE users SET password = ? WHERE username = ?"
+        lol = (data['password'], data['username'])
+        cursor.execute(query, lol)
+
+        connection.commit()
+        connection.close()
+
+        return True, 201
+
 class SetProfile(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('username',
@@ -119,10 +144,9 @@ class SetProfile(Resource):
                         type=int,
                         required=True,
                         help="This field cannot be left blank.")
-
+    #@jwt_required
     def post(self):
         data= SetProfile.parser.parse_args()
-
         connection = sqlite3.connect('user.db')
         cursor = connection.cursor()
         query = "UPDATE users SET user_name = ? , address = ? , contact = ? WHERE username = ?"
@@ -135,12 +159,37 @@ class SetProfile(Resource):
         return True, 201
 
 
+class CheckUser(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+
+
+
+    def post(self):
+        data= CheckUser.parser.parse_args()
+        connection = sqlite3.connect('user.db')
+        cursor = connection.cursor()
+
+        query = "SELECT * FROM users WHERE username=?"
+        result = cursor.execute(query, (data["username"],))
+        row = result.fetchone()
+        if row is not None:
+            return True, 200
+        else:
+            return False, 400
+
+
+
 class GetProfile(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('username',
                         type=str,
                         required=True,
                         help="This field cannot be left blank.")
+    #@jwt_required
     def post(self):
         data = GetProfile.parser.parse_args()
         save = User.find_by_username(data['username'])
@@ -260,6 +309,12 @@ class AddOrder(Resource):
                         type=int,
                         required=True,
                         help="This field cannot be left blank.")
+
+    parser.add_argument('payment-type',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+
   #  @jwt_required()
     def post(self):
         data = AddOrder.parser.parse_args()
@@ -272,8 +327,8 @@ class AddOrder(Resource):
 
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
-        query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, 0)"
-        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5]))
+        query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
+        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5], data['payment-type']))
         connection.commit()
         connection.close()
         return True, 200
@@ -316,61 +371,7 @@ class DecStock(Resource):
         return True, 200
 
 
-class Orders(Resource):
- 
-    def post(self):
-        connection = sqlite3.connect('order.db')
 
-        cursor = connection.cursor()
-        query = "SELECT * FROM orders"
-        result = cursor.execute(query).fetchall()
-
-        if len(result)==0:
-            return {"message": "No Orders"}, 400
-
-        else:
-            ll = []
-            for i in range(len(result)):
-                if result[i][7]==0:
-                    tp = {
-                        "id": result[i][0],
-                        "name": result[i][2],
-                        "items": result[i][3],
-                        "cost": result[i][4],
-                        "address": result[i][5],
-                        "contact": result[i][6]
-                        }
-                    ll.append(tp)
-            final = []
-            final.append(len(ll))
-            final.append(ll)
-            connection.commit()
-            connection.close()
-            return final, 200
-
-
-
-class Complete(Resource):
-    parser = reqparse.RequestParser()
-
-    parser.add_argument('id',
-                        type=int,
-                        required=True,
-                        help="This field cannot be left blank.")
-
-    def post(self):
-        data= Complete.parser.parse_args()
-
-        connection = sqlite3.connect('order.db')
-        cursor = connection.cursor()
-        query = "UPDATE orders SET status = 1 WHERE id = ? "
-        lol = (data['id'],)
-        cursor.execute(query, lol)
-
-        connection.commit()
-        connection.close()
-
-        return True, 201
 
 
 class ListOrders(Resource):
@@ -379,6 +380,8 @@ class ListOrders(Resource):
                         type=str,
                         required=True,
                         help="This field cannot be left blank.")
+
+    #@jwt_required()
     def post(self):
         data = ListOrders.parser.parse_args()
         connection = sqlite3.connect('order.db')
@@ -397,7 +400,8 @@ class ListOrders(Resource):
             tp = {
                 "items": row[i][3],
                 "cost": row[i][4],
-                "status": row[i][7]
+                "payment-type": row[i][7],
+                "status": row[i][8]
             }
             ll.append(tp)
         final = []
@@ -405,8 +409,30 @@ class ListOrders(Resource):
         final.append(ll)
         return final, 200
 
+class PresOrder(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
 
-
-
-         
-
+    parser.add_argument('pres',
+                        type=str,
+                        required=True,
+                        help="This field cannot be left blank.")
+    #@jwt_required()
+    def post(self):
+        data = PresOrder.parser.parse_args()
+        '''
+        imgdata = base64.b64decode(data['pres'])
+        filename = 'pres.jpg'
+        with open(filename, 'wb') as f:
+            f.write(imgdata)
+        '''
+        connection = sqlite3.connect('order.db')
+        cursor = connection.cursor()
+        query = "INSERT INTO presorder VALUES (NULL, ?, ?, 0)"
+        cursor.execute(query, (data['username'], data['pres']))
+        connection.commit()
+        connection.close()
+        return True, 200

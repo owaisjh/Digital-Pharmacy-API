@@ -10,7 +10,7 @@ class Orders(Resource):
         connection = sqlite3.connect('order.db')
 
         cursor = connection.cursor()
-        query = "SELECT * FROM orders"
+        query = "SELECT * FROM orders WHERE status=0"
         result = cursor.execute(query).fetchall()
 
         if len(result)==0:
@@ -19,16 +19,16 @@ class Orders(Resource):
         else:
             ll = []
             for i in range(len(result)):
-                if result[i][7]==0:
-                    tp = {
+                tp = {
                         "id": result[i][0],
                         "name": result[i][2],
                         "items": result[i][3],
                         "cost": result[i][4],
                         "address": result[i][5],
-                        "contact": result[i][6]
+                        "contact": result[i][6],
+                        "payment-type": result[i][7]
                         }
-                    ll.append(tp)
+                ll.append(tp)
             final = []
             final.append(len(ll))
             final.append(ll)
@@ -48,16 +48,14 @@ class Complete(Resource):
 
     def post(self):
         data= Complete.parser.parse_args()
-
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
         query = "UPDATE orders SET status = 1 WHERE id = ? "
         lol = (data['id'],)
         cursor.execute(query, lol)
-
         connection.commit()
         connection.close()
-
         return True, 201
+
 
 
