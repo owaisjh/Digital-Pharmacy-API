@@ -1,6 +1,6 @@
 import sqlite3
 from flask_restful import Resource, reqparse
-
+import json
 
 
 
@@ -160,7 +160,7 @@ class NewOrder(Resource):
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
         query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
-        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5], "COD"))
+        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5], "Cash on Delivery"))
 
         query = "UPDATE presorder SET status = 1 WHERE id = ? "
         lol = (data['id'],)
@@ -174,25 +174,68 @@ class NewOrder(Resource):
 
 class CounterOrder(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('items',
-                        type=str,
+
+    parser.add_argument('data',
                         required=True,
                         help="This field cannot be left blank.")
 
-    parser.add_argument('cost',
+    parser.add_argument('payment-type',
                         type=str,
                         required=True,
                         help="This field cannot be left blank.")
 
     def post(self):
         data = CounterOrder.parser.parse_args()
-        connection = sqlite3.connect('order.db')
+
+        y = json.loads(data["data"])
+        connection = sqlite3.connect('meds.db')
         cursor = connection.cursor()
-        query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1)"
-        cursor.execute(query, ("counter", "counter", data['items'], data['cost'], "counter", "counter", "COD"))
+
+        order =""
+        cost = 0
+
+
+        for i in range(y[0]):
+
+            query = "SELECT * FROM allmeds WHERE medname=?"
+            result = cursor.execute(query, (y[1][i]["name"],)).fetchone()
+
+
+            if (result[3] - y[1][i]["quantity"] >= 0):
+
+                query = "UPDATE allmeds SET quantity = ? WHERE medname = ?"
+                cursor.execute(query, (result[3] - y[1][i]["quantity"], y[1][i]["name"]))
+
+                query = "UPDATE " + result[1] + " SET quantity = ? WHERE medname = ?"
+                cursor.execute(query, (result[3] - y[1][i]["quantity"], y[1][i]["name"]))
+
+                cost = cost + (result[2] * y[1][i]["quantity"])
+
+                if (y[1][i]["quantity"] != 0):
+                    for j in range(y[1][i]["quantity"]):
+                        order = order + y[1][i]["name"] + "||"
+
+            else:
+                connection.commit()
+                connection.close()
+                return False, 400
+
+
+
         connection.commit()
         connection.close()
+
+        if(len(order)!=0):
+            connection = sqlite3.connect('order.db')
+            cursor = connection.cursor()
+            query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1)"
+            cursor.execute(query, ("Counter-Order", "Counter-Order", order, cost, "Counter-Order", 0, data['payment-type']))
+            connection.commit()
+            connection.close()
+
         return True, 200
+
+
 
 
 class DeleteMed(Resource):

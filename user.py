@@ -114,7 +114,7 @@ class ForgetPassword(Resource):
         data= ForgetPassword.parser.parse_args()
         connection = sqlite3.connect('user.db')
         cursor = connection.cursor()
-        query = "UPDATE users SET password = ? WHERE username = ?"
+        query = "UPDATE users SET password =? WHERE username =?"
         lol = (data['password'], data['username'])
         cursor.execute(query, lol)
 
@@ -332,9 +332,6 @@ class AddOrder(Resource):
         connection.commit()
         connection.close()
         return True, 200
-
-
-
 
 
 
