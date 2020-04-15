@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 import json
-
+import datetime
 
 
 class Orders(Resource):
@@ -26,7 +26,8 @@ class Orders(Resource):
                         "cost": result[i][4],
                         "address": result[i][5],
                         "contact": result[i][6],
-                        "payment-type": result[i][7]
+                        "payment-type": result[i][7],
+                        "date-rec": result[i][9]
                         }
                 ll.append(tp)
             final = []
@@ -50,8 +51,8 @@ class Complete(Resource):
         data= Complete.parser.parse_args()
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
-        query = "UPDATE orders SET status = 1 WHERE id = ? "
-        lol = (data['id'],)
+        query = "UPDATE orders SET datecomp = ? , status = 1 WHERE id = ? "
+        lol = (datetime.datetime.now(),data['id'])
         cursor.execute(query, lol)
         connection.commit()
         connection.close()

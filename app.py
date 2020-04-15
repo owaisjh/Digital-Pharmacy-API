@@ -7,7 +7,8 @@ from user import SetProfile, GetProfile, UserRegister, AllMeds, CatCall, Search,
 
 from delivery import Orders, Complete
 
-from admin import NewMed, Update, NewOrder, PresOrders, DeleteMed, CounterOrder
+from admin import NewMed, Update, NewOrder, PresOrders, DeleteMed, CounterOrder, FrontPage
+
 
 from datetime import timedelta
 
@@ -43,6 +44,9 @@ api.add_resource(DeleteMed, '/del_med')
 api.add_resource(NewOrder, '/new_order')
 api.add_resource(PresOrders, '/presorders')
 api.add_resource(CounterOrder, '/counter_order')
+
+api.add_resource(FrontPage, '/front_page')
+
 
 
 

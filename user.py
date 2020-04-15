@@ -2,6 +2,8 @@ import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt import JWT, jwt_required
 import base64
+import datetime
+
 
 
 
@@ -327,12 +329,11 @@ class AddOrder(Resource):
 
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
-        query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0)"
-        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5], data['payment-type']))
+        query = "INSERT INTO orders VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL)"
+        cursor.execute(query, (data['username'], result[3], data['items'], data['cost'], result[4], result[5], data['payment-type'], datetime.datetime.now()))
         connection.commit()
         connection.close()
         return True, 200
-
 
 
 class DecStock(Resource):
@@ -398,7 +399,9 @@ class ListOrders(Resource):
                 "items": row[i][3],
                 "cost": row[i][4],
                 "payment-type": row[i][7],
-                "status": row[i][8]
+                "status": row[i][8],
+                "date-rec": row[i][9],
+                "date-comp": row[i][10]
             }
             ll.append(tp)
         final = []
