@@ -384,10 +384,7 @@ class ListOrders(Resource):
         data = ListOrders.parser.parse_args()
         connection = sqlite3.connect('order.db')
         cursor = connection.cursor()
-        '''
-        query = "SELECT * FROM orders WHERE username = "+data['username']
-        result = cursor.execute(query).fetchall()
-        '''
+
         query = "SELECT * FROM orders WHERE username=?"
         result = cursor.execute(query, (data["username"],))
         row = result.fetchall()

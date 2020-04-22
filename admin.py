@@ -4,6 +4,7 @@ import json
 import datetime
 from datetime import date
 import sys
+from dateutil import relativedelta
 
 
 
@@ -88,13 +89,13 @@ class PresOrders(Resource):
         result = cursor.execute(query).fetchall()
 
         ll = []
-        for i in range(len(result)):
-            tp = {
-                "id": result[i][0],
-                "username": result[i][1],
-                "pres": result[i][2],
+        #for i in range(len(result)):
+        tp = {
+                "id": result[0][0],
+                "username": result[0][1],
+                "pres": result[0][2],
             }
-            ll.append(tp)
+        ll.append(tp)
 
         final = []
         final.append(len(ll))
@@ -302,38 +303,40 @@ class FrontPage(Resource):
         cursor = connection.cursor()
 
 
+
+
         currentMonth = datetime.datetime.today().month
-        currentYear= datetime.datetime.today().year
+        currentYear = datetime.datetime.today().year
 
-
-        if currentMonth<10:
-            startdate= str(currentYear) + "-0" + str(currentMonth) + "-01"
+        if currentMonth < 10:
+            startdate = str(currentYear) + "-0" + str(currentMonth) + "-01"
         else:
             startdate = str(currentYear) + "-" + str(currentMonth) + "-01"
 
-        query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + startdate +  " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1))+ "'"
-        result= cursor.execute(query).fetchone()
-        month=result[0]
-        if month==None:
-            month=0
-
-
-
-
-        query = "SELECT SUM(cost) FROM orders WHERE username = 'Counter-Order' AND  daterec >= '"+ str(date.today()) +  " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1))+ "'"
+        query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + startdate + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
         result = cursor.execute(query).fetchone()
-        counterorder=result[0]
-        if counterorder==None:
-            counterorder=0
+        month = result[0]
+        if month == None:
+            month = 0
 
 
 
 
-        query = "SELECT SUM(cost) FROM orders WHERE username != 'Counter-Order' AND  daterec >= '" + str(date.today()) + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
+        query = "SELECT COUNT(cost) FROM orders WHERE username = 'Counter-Order' AND  daterec >= '" + str(date.today()) + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
+        result = cursor.execute(query).fetchone()
+        counterorder = result[0]
+        if counterorder == None:
+            counterorder = 0
+
+
+
+
+
+        query = "SELECT COUNT(cost) FROM orders WHERE username != 'Counter-Order' AND  daterec >= '" + str(date.today()) + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
         result = cursor.execute(query).fetchone()
         apporder = result[0]
-        if apporder==None:
-            apporder=0
+        if apporder == None:
+            apporder = 0
 
 
 
@@ -343,52 +346,84 @@ class FrontPage(Resource):
 
         query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + startdate + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
         result = cursor.execute(query).fetchone()
-        year= result[0]
-        if year==None:
-            year=0
+        year = result[0]
+        if year == None:
+            year = 0
 
 
 
-        currentYear= datetime.datetime.today().year
+
+
+        currentYear = datetime.datetime.today().year
         currentMonth = datetime.datetime.today().month
 
-
-        if currentMonth>8:
-            if currentMonth == 9:
-                startdate = str(currentYear) + "-0" + str(currentMonth-8) + "-01"
-
-            else:
-                startdate = str(currentYear) + "-" + str(currentMonth-8) + "-01"
-
-
-
-        else:
-            if currentMonth >5 :
-                startdate = str(currentYear-1) + "-" + str(12 -(8 - currentMonth))+ "-01"
-            else:
-                startdate = str(currentYear - 1) + "-0" + str(12 - (8 - currentMonth)) + "-01"
-
-
-
-        query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + startdate + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
-        result = cursor.execute(query).fetchone()
-        eightmonths = result[0]
-        if eightmonths == None:
-            eightmonths = 0
-
-
-        if currentMonth<10:
-            startdate= str(currentYear) + "-0" + str(currentMonth) + "-01"
+        if currentMonth < 10:
+            startdate = str(currentYear) + "-0" + str(currentMonth) + "-01"
         else:
             startdate = str(currentYear) + "-" + str(currentMonth) + "-01"
 
-        query = "SELECT * FROM orders WHERE daterec >='" + startdate +  " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1))+ "'"
-        result= cursor.execute(query).fetchall()
+        eightmonths=[]
+
+        query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + startdate + " 00:00:00.000' AND daterec <= '" + str(datetime.date.today() + datetime.timedelta(days=1)) + "'"
+        result = cursor.execute(query).fetchone()
+        lol = 0
+        if result[0] == None:
+            lol = 0
+        else:
+            lol = result[0]
+
+        temp={"startdate": startdate, "total": lol}
+        eightmonths.append(temp)
+
+
+        dates=[]
+        today = datetime.date.today()
+        startdate = today.replace(day=1)
+        dates.append(str(startdate))
+
+        for i in range(7):
+            startdate=startdate + relativedelta.relativedelta(months=-1)
+            dates.append(str(startdate))
+
+
+        i=0
+        while i<7:
+            query = "SELECT SUM(cost) FROM orders WHERE daterec >='" + dates[i+1] + " 00:00:00.000' AND daterec <= '" + dates[i] + " 00:00:00.000'"
+            result = cursor.execute(query).fetchone()
+            lol = 0
+            if result[0] == None:
+                lol = 0
+            else:
+                lol = result[0]
+
+            temp = {"startdate": dates[i+1], "total": lol}
+            eightmonths.append(temp)
+            i=i+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if currentMonth < 10:
+            startdate = str(currentYear) + "-0" + str(currentMonth) + "-01"
+        else:
+            startdate = str(currentYear) + "-" + str(currentMonth) + "-01"
+
+        query = "SELECT * FROM orders WHERE daterec >='" + startdate + " 00:00:00.000' AND daterec <= '" + str(
+            datetime.date.today() + datetime.timedelta(days=1)) + "'"
+        result = cursor.execute(query).fetchall()
         connection.commit()
         connection.close()
-
-
-
 
         #code for top 3
         def getcat(name):
@@ -405,7 +440,6 @@ class FrontPage(Resource):
 
         list = []
         def doescatexist(cat):
-
             for p in range(len(list)):
                 if list[p]['category'] == cat:
                     return p
@@ -420,7 +454,7 @@ class FrontPage(Resource):
                     items.append(result[i][3][save:j])
                     save=j+2
                     j=j+1
-                    if j+2 == len(result[i][3]):
+                    if j+1 == len(result[i][3]):
                         break
                 j= j+1
 
