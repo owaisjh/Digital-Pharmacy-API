@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt import JWT, jwt_required
-import base64
+#import base64
 import datetime
 
 
