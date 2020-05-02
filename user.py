@@ -36,19 +36,19 @@ class User:
 
     @classmethod
     def find_by_id(cls, _id):
-        connection = sqlite3.connect('user.db')
-        cursor = connection.cursor()
+            connection = sqlite3.connect('user.db')
+            cursor = connection.cursor()
 
-        query = "SELECT * FROM users WHERE id=?"
-        result = cursor.execute(query, (_id,))
-        row = result.fetchone()
-        if row is not None:
-            user = cls(*row)
-        else:
-            user = None
+            query = "SELECT * FROM users WHERE id=?"
+            result = cursor.execute(query, (_id,))
+            row = result.fetchone()
+            if row is not None:
+                user = cls(*row)
+            else:
+                user = None
 
-        connection.close()
-        return user
+            connection.close()
+            return user
 
 
 class UserRegister(Resource):

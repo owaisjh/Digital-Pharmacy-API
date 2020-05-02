@@ -91,10 +91,10 @@ class PresOrders(Resource):
         ll = []
         #for i in range(len(result)):
         tp = {
-                "id": result[0][0],
-                "username": result[0][1],
-                "pres": result[0][2],
-            }
+                    "id": result[0][0],
+                    "username": result[0][1],
+                    "pres": result[0][2],
+                }
         ll.append(tp)
 
         final = []
@@ -279,8 +279,8 @@ class DeleteMed(Resource):
                         help="This field cannot be left blank.")
 
     def post(self):
+        data= DeleteMed.parser.parse_args()
 
-        data = DeleteMed.parser.parse_args()
         connection = sqlite3.connect('meds.db')
 
         cursor = connection.cursor()
@@ -288,8 +288,7 @@ class DeleteMed(Resource):
         query = "DELETE FROM allmeds WHERE medname=?"
         cursor.execute(query, (data['name'],))
 
-
-        query = "DELETE FROM "+data["category"]+" WHERE medname=?"
+        query = "DELETE FROM " + data["category"] + " WHERE medname=?"
         cursor.execute(query, (data['name'],))
 
         connection.commit()
